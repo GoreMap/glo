@@ -3,155 +3,404 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ModsDark Assistant — Конструктор модов для Glow Dark</title>
+  <title>GloW Dark & ModsDark Assistant</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2300e676'><path d='M13 2L3 14h9l-1 8 10-12h-9l1-8z'/></svg>">
-  <script>
-    (function() {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'light') {
-        document.documentElement.classList.add('light-theme');
-      }
-    })();
-  </script>
+  <!-- Three.js 3D WebGL Library for Real 3D Celestial Objects -->
+  <script src="three.min.js"></script>
+  <script>if (typeof THREE === 'undefined') document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');</script>
+  <script src="GLTFLoader.js"></script>
+  <script src="earth_data.js"></script>
+  <script src="moon_data.js"></script>
+  <script src="sun_data.js"></script>
+  <script src="space_data.js"></script>
 </head>
 <body>
 
-  <!-- Dynamic Cyber Backgrounds -->
+  <!-- Dynamic Ambient Glow Backgrounds -->
   <div class="bg-gradient-top"></div>
   <div class="bg-grid"></div>
 
-  <!-- Fixed Floating Theme Switcher -->
-  <button id="theme-toggle" class="theme-toggle-floating" aria-label="Переключить тему" title="Переключить тему (Светлая / Тёмная)">
-    <svg class="theme-icon sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="12" cy="12" r="5"/>
-      <line x1="12" y1="1" x2="12" y2="3"/>
-      <line x1="12" y1="21" x2="12" y2="23"/>
-      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
-      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
-      <line x1="1" y1="12" x2="3" y2="12"/>
-      <line x1="21" y1="12" x2="23" y2="12"/>
-      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
-      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
-    </svg>
-    <svg class="theme-icon moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-    </svg>
-    <span class="theme-toggle-text">Тема</span>
-  </button>
+  <!-- 3D Celestial Universe (Real 3D Earth, Sun, Moon & Cosmic Stars via Three.js WebGL) -->
+  <div class="celestial-backdrop" id="celestialBackdrop">
+    <canvas id="space3d-canvas" class="space-3d-canvas"></canvas>
+  </div>
 
-  <!-- Main Content -->
-  <main class="container">
-    <!-- Hero -->
-    <section class="hero">
-      <h1 class="hero-title">
-        ModsDark <span class="neon-text">Assistant</span>
-      </h1>
+  <!-- Top Bar: Nav Tabs, Celestial Time & Camera Angles Switcher -->
+  <header class="top-nav-bar">
+    <!-- Real-time Celestial Status Widget (Sun / Moon / Sky by Time) -->
+    <div class="celestial-widget" id="celestialWidget" title="Текущее астрономическое время и фаза суток">
+      <div class="celestial-visual" id="celestialVisual"></div>
+      <div class="celestial-info">
+        <span class="celestial-clock" id="celestialClock">--:--</span>
+        <span class="celestial-phase" id="celestialPhase">Время суток</span>
+      </div>
+    </div>
 
-      <div class="hero-actions">
-        <a href="app/ModsDark assistant.exe" download="ModsDark assistant.exe" class="download-btn-epic">
-          <div class="btn-glow"></div>
-          <div class="btn-content">
-            <div class="btn-icon-wrap">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="7 10 12 15 17 10"/>
-                <line x1="12" y1="15" x2="12" y2="3"/>
-              </svg>
+    <div class="nav-tabs-container">
+      <div class="tab-slider-pill" id="tabSliderPill"></div>
+      <button class="nav-tab active" data-target="glowdark-section" onclick="switchSection('glowdark-section')">
+        <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+        <span class="tab-label">GloW Dark</span>
+      </button>
+      <button class="nav-tab" data-target="modsdark-section" onclick="switchSection('modsdark-section')">
+        <svg class="tab-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        <span class="tab-label">ModsDark Assistant</span>
+      </button>
+    </div>
+
+    <!-- Top Right Actions: Telegram & Camera Angles Switcher -->
+    <div class="top-nav-right">
+      <a href="https://t.me/HideOut18" target="_blank" rel="noopener noreferrer" class="telegram-nav-btn" title="Telegram-канал @HideOut18">
+        <svg class="tg-nav-icon" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"/>
+        </svg>
+        <span class="tg-nav-text">ТГ Канал</span>
+      </a>
+
+      <!-- Random Cosmic Animation Trigger Button -->
+      <button id="camera-random-btn" class="camera-random-btn" aria-label="Случайная космическая анимация" title="Нажмите для переключения на случайную анимацию облёта">
+        <div class="camera-icon-wrap" id="cameraIconWrap">
+          <svg class="camera-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 3 21 3 21 8"></polyline>
+            <line x1="4" y1="20" x2="21" y2="3"></line>
+            <polyline points="21 16 21 21 16 21"></polyline>
+            <line x1="15" y1="15" x2="21" y2="21"></line>
+            <line x1="4" y1="4" x2="9" y2="9"></line>
+          </svg>
+        </div>
+        <span class="camera-label-text" id="cameraLabelText">Случайный облёт</span>
+      </button>
+
+      <!-- Cinema Mode Button -->
+      <button id="cinemaModeBtn" class="cinema-mode-btn" aria-label="Режим Кинотеатр" title="Включить полноэкранный режим «Кинотеатр»">
+        <div class="cinema-icon-wrap" id="cinemaIconWrap">
+          <svg class="cinema-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="20" rx="3"></rect>
+            <polygon points="10 8 16 12 10 16 10 8" fill="currentColor"></polygon>
+          </svg>
+        </div>
+        <span class="cinema-label-text">Кинотеатр</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Animated Slide Viewport -->
+  <main class="sections-viewport">
+    <div class="sections-track" id="sectionsTrack">
+      
+      <!-- ======================================================================
+           SLIDE 1: GloW Dark
+           ====================================================================== -->
+      <section id="glowdark-section" class="app-slide active-slide">
+        <div class="container">
+          <div class="hero text-center">
+            <div class="section-badge purple-badge">
+              <span>ИНТЕРАКТИВНАЯ НОВЕЛЛА & СИМУЛЯТОР</span>
             </div>
-            <div class="btn-texts">
-              <span class="btn-main-text">Скачать приложение</span>
-              <span class="btn-info-text">ModsDark assistant.exe • ~81 МБ</span>
+            <h1 class="hero-title">
+              GloW <span class="neon-purple">Dark</span>
+            </h1>
+            <p class="hero-subtitle">
+              Интерактивный симулятор отношений и визуальная новелла в формате стильного ночного мессенджера.
+            </p>
+
+            <div class="hero-actions">
+              <a href="app/GloW-Dark.apk" download="GloW-Dark.apk" class="download-btn-epic download-btn-purple" title="Скачать GloW-Dark.apk">
+                <div class="btn-glow purple-glow-pulse"></div>
+                <div class="btn-content purple-btn-content">
+                  <div class="btn-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="5" y="2" width="14" height="20" rx="2" ry="2"/>
+                      <line x1="12" y1="18" x2="12.01" y2="18"/>
+                    </svg>
+                  </div>
+                  <div class="btn-texts">
+                    <span class="btn-main-text">Скачать на Android</span>
+                    <span class="btn-info-text">GloW-Dark.apk • Android • ~163 МБ</span>
+                  </div>
+                </div>
+              </a>
+
+              <a href="app/GloW%20Dark.exe" download="GloW Dark.exe" class="download-btn-epic download-btn-pc" title="Скачать GloW Dark.exe">
+                <div class="btn-glow pc-glow-pulse"></div>
+                <div class="btn-content pc-btn-content">
+                  <div class="btn-icon-wrap pc-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                      <line x1="8" y1="21" x2="16" y2="21"/>
+                      <line x1="12" y1="17" x2="12" y2="21"/>
+                    </svg>
+                  </div>
+                  <div class="btn-texts">
+                    <span class="btn-main-text">Скачать ПК версию</span>
+                    <span class="btn-info-text">GloW Dark.exe • Windows • ~172 МБ</span>
+                  </div>
+                </div>
+              </a>
             </div>
           </div>
-        </a>
 
-        <a href="app/24343243.zip" download="24343243.zip" class="download-btn-demo">
-          <div class="btn-demo-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
-              <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
-              <line x1="12" y1="22.08" x2="12" y2="12"/>
+          <!-- Two Formats Description -->
+          <div class="formats-grid">
+            <!-- Format 1 -->
+            <div class="format-card">
+              <div class="format-header">
+                <div class="format-icon purple-glow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                  </svg>
+                </div>
+                <div class="format-title-group">
+                  <span class="format-tag">Формат 1</span>
+                  <h3>Имитация реалистичного чата («Переписки»)</h3>
+                </div>
+              </div>
+              <p class="format-desc">
+                Вы переписываетесь с аниме-девушками, выбираете варианты ответов и влияете на развитие отношений.
+                Персонажи присылают фото, кружочки, голосовые сообщения и реагируют на ваши поступки (могут флиртовать, делиться секретами или обидеться и «отшить»).
+              </p>
+            </div>
+
+            <!-- Format 2 -->
+            <div class="format-card">
+              <div class="format-header">
+                <div class="format-icon pink-glow">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                  </svg>
+                </div>
+                <div class="format-title-group">
+                  <span class="format-tag">Формат 2</span>
+                  <h3>Визуальные новеллы («Прогулки / Свидания»)</h3>
+                </div>
+              </div>
+              <p class="format-desc">
+                Полноценные интерактивные сцены с красивыми фонами, спрайтами с разными эмоциями, фоновой музыкой и эмбиентом.
+                Девушка может позвать вас на свидание прямо из переписки, а после встречи вы возвращаетесь обратно в чат.
+              </p>
+            </div>
+          </div>
+
+          <!-- Screenshots Showcase -->
+          <div class="showcase-section">
+            <div class="section-title-wrap text-center">
+              <h2 class="section-heading">Скриншоты GloW Dark</h2>
+              <p class="section-subtext">Нажмите на любой скриншот, чтобы рассмотреть в полном размере</p>
+            </div>
+
+            <div class="showcase-phone-grid">
+              <!-- Shot 1 -->
+              <div class="phone-card" onclick="openLightbox('photos/GlowDark/3.png', 'Список диалогов и персонажей (Аска, СС, Марин, Морри, Рам, Рем)')">
+                <div class="phone-img-wrap">
+                  <img src="photos/GlowDark/3.png" alt="Диалоги и персонажи" loading="lazy">
+                  <div class="zoom-hover-overlay">
+                    <div class="zoom-pill">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                      <span>Увеличить</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="phone-caption">
+                  <strong>Диалоги и персонажи</strong>
+                  <span>Список чатов в стильном ночном мессенджере</span>
+                </div>
+              </div>
+
+              <!-- Shot 2 -->
+              <div class="phone-card" onclick="openLightbox('photos/GlowDark/2.png', 'Имитация чата: выбор вариантов ответов и шкала отношений')">
+                <div class="phone-img-wrap">
+                  <img src="photos/GlowDark/2.png" alt="Реалистичный чат" loading="lazy">
+                  <div class="zoom-hover-overlay">
+                    <div class="zoom-pill">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                      <span>Увеличить</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="phone-caption">
+                  <strong>Интерактивная переписка</strong>
+                  <span>Выбор вариантов реплик и уровень симпатии</span>
+                </div>
+              </div>
+
+              <!-- Shot 3 -->
+              <div class="phone-card" onclick="openLightbox('photos/GlowDark/1.png', 'Параметры, оформление и поддержка модов персонажей (v4.0)')">
+                <div class="phone-img-wrap">
+                  <img src="photos/GlowDark/1.png" alt="Настройки и моды" loading="lazy">
+                  <div class="zoom-hover-overlay">
+                    <div class="zoom-pill">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                      <span>Увеличить</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="phone-caption">
+                  <strong>Настройки и поддержка модов</strong>
+                  <span>Управление персонажами, аудио и внешним видом</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================================================================
+           SLIDE 2: ModsDark Assistant
+           ====================================================================== -->
+      <section id="modsdark-section" class="app-slide">
+        <div class="container">
+          <div class="hero text-center">
+            <div class="section-badge emerald-badge">
+              <span>КОНСТРУКТОР МОДОВ</span>
+            </div>
+            <h1 class="hero-title">
+              ModsDark <span class="neon-text">Assistant</span>
+            </h1>
+            <p class="hero-subtitle">
+              Помощник создания модов для GloW Dark. Визуальный редактор сценариев, автогенерация скриптов и мгновенное тестирование на виртуальном смартфоне.
+            </p>
+
+            <div class="hero-actions">
+              <a href="app/ModsDark assistant.exe" download="ModsDark assistant.exe" class="download-btn-epic">
+                <div class="btn-glow"></div>
+                <div class="btn-content">
+                  <div class="btn-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                  </div>
+                  <div class="btn-texts">
+                    <span class="btn-main-text">Скачать приложение</span>
+                    <span class="btn-info-text">ModsDark assistant.exe • ~81 МБ</span>
+                  </div>
+                </div>
+              </a>
+
+              <a href="app/24343243.zip" download="24343243.zip" class="download-btn-demo">
+                <div class="btn-demo-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                    <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                    <line x1="12" y1="22.08" x2="12" y2="12"/>
+                  </svg>
+                </div>
+                <div class="btn-texts">
+                  <span class="btn-main-text">Скачать пример мода</span>
+                  <span class="btn-info-text">24343243.zip • Демо-проект (~3.4 МБ)</span>
+                </div>
+              </a>
+
+            </div>
+          </div>
+
+          <!-- Assistant Showcase -->
+          <div class="showcase-section">
+            <div class="section-title-wrap text-center">
+              <h2 class="section-heading">Скриншоты ModsDark Assistant</h2>
+            </div>
+
+            <div class="showcase-grid">
+              <!-- Card 1 -->
+              <div class="showcase-card" onclick="openLightbox('photos/1.png', 'Рабочее окно: конструктор сценария, профиль персонажа и редактор кода')">
+                <div class="window-chrome">
+                  <div class="window-controls">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <div class="window-title-tab">Рабочая среда</div>
+                  <div class="window-action-tag">Увеличить</div>
+                </div>
+                <div class="showcase-img-wrap">
+                  <img src="photos/1.png" alt="Рабочая область ModsDark" loading="lazy">
+                  <div class="zoom-hover-overlay">
+                    <div class="zoom-pill">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <line x1="11" y1="8" x2="11" y2="14"/>
+                        <line x1="8" y1="11" x2="14" y2="11"/>
+                      </svg>
+                      <span>Развернуть</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="showcase-caption">
+                  <strong>Конструктор сценария и кода</strong>
+                  <span>Панели реплик, аватара, ресурсов и автогенерация скриптов</span>
+                </div>
+              </div>
+
+              <!-- Card 2 -->
+              <div class="showcase-card" onclick="openLightbox('photos/2.png', 'Инспектор симулятора: виртуальный телефон и отладка шагов')">
+                <div class="window-chrome">
+                  <div class="window-controls">
+                    <span></span><span></span><span></span>
+                  </div>
+                  <div class="window-title-tab">Симулятор смартфона</div>
+                  <div class="window-action-tag">Увеличить</div>
+                </div>
+                <div class="showcase-img-wrap">
+                  <img src="photos/2.png" alt="Симулятор и инспектор" loading="lazy">
+                  <div class="zoom-hover-overlay">
+                    <div class="zoom-pill">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <line x1="11" y1="8" x2="11" y2="14"/>
+                        <line x1="8" y1="11" x2="14" y2="11"/>
+                      </svg>
+                      <span>Развернуть</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="showcase-caption">
+                  <strong>Инспектор симулятора</strong>
+                  <span>Тестирование сценария и проверка переходов на телефоне</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Community Telegram Banner -->
+  <footer class="site-community-footer">
+    <div class="container">
+      <div class="tg-community-card">
+        <div class="tg-card-left">
+          <div class="tg-card-logo">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .37z"/>
             </svg>
           </div>
-          <div class="btn-texts">
-            <span class="btn-main-text">Скачать пример мода</span>
-            <span class="btn-info-text">24343243.zip • Демо-проект (~3.4 МБ)</span>
+          <div class="tg-card-info">
+            <div class="tg-badge">ОФИЦИАЛЬНЫЙ ТЕЛЕГРАМ КАНАЛ</div>
+            <h3 class="tg-card-title">Присоединяйтесь к <span class="neon-cyan">@HideOut18</span></h3>
+            <p class="tg-card-desc">Свежие билды, новости разработки GloW Dark, модификации и общение с создателями</p>
           </div>
+        </div>
+        <a href="https://t.me/HideOut18" target="_blank" rel="noopener noreferrer" class="tg-card-btn">
+          <span>Подписаться на канал</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
         </a>
       </div>
-    </section>
-
-    <!-- Showcase / Screenshots -->
-    <section class="showcase-section">
-      <div class="section-title-wrap text-center">
-        <h2 class="section-heading">Скриншоты</h2>
-      </div>
-
-      <div class="showcase-grid">
-        <!-- Card 1 -->
-        <div class="showcase-card" onclick="openLightbox('photos/1.png', 'Рабочее окно: конструктор сценария, профиль персонажа и редактор кода')">
-          <div class="window-chrome">
-            <div class="window-controls">
-              <span></span><span></span><span></span>
-            </div>
-            <div class="window-title-tab">Рабочая среда</div>
-            <div class="window-action-tag">Увеличить</div>
-          </div>
-          <div class="showcase-img-wrap">
-            <img src="photos/1.png" alt="Рабочая область ModsDark" loading="lazy">
-            <div class="zoom-hover-overlay">
-              <div class="zoom-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <circle cx="11" cy="11" r="8"/>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                  <line x1="11" y1="8" x2="11" y2="14"/>
-                  <line x1="8" y1="11" x2="14" y2="11"/>
-                </svg>
-                <span>Развернуть</span>
-              </div>
-            </div>
-          </div>
-          <div class="showcase-caption">
-            <strong>Конструктор сценария и кода</strong>
-            <span>Панели реплик, аватара, ресурсов и автогенерация скриптов</span>
-          </div>
-        </div>
-
-        <!-- Card 2 -->
-        <div class="showcase-card" onclick="openLightbox('photos/2.png', 'Инспектор симулятора: виртуальный телефон и отладка шагов')">
-          <div class="window-chrome">
-            <div class="window-controls">
-              <span></span><span></span><span></span>
-            </div>
-            <div class="window-title-tab">Симулятор смартфона</div>
-            <div class="window-action-tag">Увеличить</div>
-          </div>
-          <div class="showcase-img-wrap">
-            <img src="photos/2.png" alt="Симулятор и инспектор" loading="lazy">
-            <div class="zoom-hover-overlay">
-              <div class="zoom-pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
-                  <circle cx="11" cy="11" r="8"/>
-                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-                  <line x1="11" y1="8" x2="11" y2="14"/>
-                  <line x1="8" y1="11" x2="14" y2="11"/>
-                </svg>
-                <span>Развернуть</span>
-              </div>
-            </div>
-          </div>
-          <div class="showcase-caption">
-            <strong>Инспектор симулятора</strong>
-            <span>Тестирование сценария и проверка переходов на телефоне</span>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
+    </div>
+  </footer>
 
   <!-- Lightbox Modal -->
   <div id="lightbox" class="lightbox-modal" onclick="closeLightbox(event)">
@@ -161,6 +410,71 @@
       <div id="lightbox-caption" class="lightbox-caption"></div>
     </div>
   </div>
+
+  <!-- Floating Cosmic Zoom HUD Controls -->
+  <div class="cosmic-zoom-hud" id="cosmicZoomHud">
+    <button class="zoom-btn" id="zoomOutBtn" aria-label="Отдалить" title="Отдалить (Zoom Out / Ctrl+Колёсико)">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+    <button class="zoom-reset-btn" id="zoomResetBtn" aria-label="Сбросить масштаб" title="Сбросить масштаб (100%)">
+      <span id="zoomPercentText">100%</span>
+    </button>
+  </div>
+
+  <!-- Sci-Fi Telemetry Overlay (Active ONLY in Cinema Mode) -->
+  <aside class="cinema-telemetry-hud" id="cinemaTelemetryHud" aria-label="Режим Кинотеатр">
+    <!-- Top HUD Navigation / Status Bar -->
+    <div class="hud-top-bar">
+      <div class="hud-brand">
+        <span class="hud-live-dot"></span>
+        <span class="hud-title">РЕЖИМ НАБЛЮДЕНИЯ «КИНОТЕАТР»</span>
+      </div>
+      <div class="hud-top-actions">
+        <button id="hudCameraRandomBtn" class="hud-action-btn" title="Случайный космический ракурс">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="16 3 21 3 21 8"></polyline>
+            <line x1="4" y1="20" x2="21" y2="3"></line>
+            <polyline points="21 16 21 21 16 21"></polyline>
+            <line x1="15" y1="15" x2="21" y2="21"></line>
+            <line x1="4" y1="4" x2="9" y2="9"></line>
+          </svg>
+          <span id="hudCameraLabel">Ракурс</span>
+        </button>
+        <button id="hudCelestialToggleBtn" class="hud-action-btn" title="Переключить День/Ночь (Солнце/Луна)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+          <span id="hudDayNightLabel">День/Ночь</span>
+        </button>
+        <button id="exitCinemaBtn" class="hud-exit-btn" title="Выйти из режима Кинотеатр (или клавиша ESC)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+          <span>ВЫЙТИ [ESC]</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Bottom HUD Status Line -->
+    <div class="hud-bottom-bar">
+      <div class="hud-scan-line"></div>
+      <div class="hud-hint">
+        <span class="hud-hint-icon">✦</span>
+        <span>Интерактивная 3D-сфера: <strong>Зажмите ЛКМ / Касание</strong> — свободный облёт; <strong>Колёсико</strong> — отдаление сцены; <strong>ESC</strong> — возврат к сайту.</span>
+      </div>
+    </div>
+  </aside>
 
   <script src="script.js"></script>
 </body>
